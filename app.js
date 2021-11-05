@@ -1,10 +1,7 @@
 const express = require("express");
-const compression = require("compression");
 const wordsRoutes = require("./routes/words");
 
 const app = express();
-
-app.use(compression());
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
