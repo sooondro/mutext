@@ -1,6 +1,6 @@
-const words = require("../data/words");
+import words from "../data/words.js";
 
-module.exports = (n) => {
+const retrieveRandomWords = (n) => {
     let randomIndex;
     let wordsArray = [];
     for(let i = 0; i < n; i++) {
@@ -9,3 +9,5 @@ module.exports = (n) => {
     }
     return wordsArray;
 };
+
+export default retrieveRandomWords;

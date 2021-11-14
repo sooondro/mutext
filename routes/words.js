@@ -1,9 +1,10 @@
-const express = require("express");
+import express from "express";
 
-const wordsController = require("../controllers/words");
+import wordsController from "../controllers/words.js";
+import isAuth from "../middleware/is-auth.js";
 
 const router = express.Router();
 
-router.get("/words", wordsController.getWords);
+router.get("/words", isAuth, wordsController.getWords);
 
-module.exports = router;
+export default router;
