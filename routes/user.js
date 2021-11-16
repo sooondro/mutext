@@ -5,8 +5,12 @@ import isAuth from "../middleware/is-auth.js";
 
 const router = express.Router();
 
-router.post("/add-result", userController.postAddNewResult);
+router.post("/add-result", isAuth, userController.postAddNewResult);
 
-router.get("/get-user/:userId", userController.getUserById);
+router.get("/profile", isAuth, userController.getUserById);
+
+router.get("/results", isAuth, userController.getUserResults);
+
+router.put("/first-time", isAuth, userController.updateFirstTime);
 
 export default router;

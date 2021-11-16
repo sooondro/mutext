@@ -2,9 +2,11 @@ import bcrypt from "bcrypt";
 import expressValidator from "express-validator";
 import jwt from "jsonwebtoken";
 
-const { validationResult } = expressValidator;
-
+import authConfig from "../config/auth.config.js";
 import User from "../models/user.js";
+import RefreshToken from "../models/jwt-refresh-token.js";
+
+const { validationResult } = expressValidator;
 
 const postRegisterUser = async (req, res, next) => {
   const errors = validationResult(req);
@@ -27,7 +29,7 @@ const postRegisterUser = async (req, res, next) => {
       results: [],
       solvedTexts: [],
     });
-    user.save();
+    await user.save();
     res.status(200).json({
       confirmation: "success",
     });
@@ -59,15 +61,66 @@ const postLogin = async (req, res, next) => {
         email: loadedUser.email,
         userId: loadedUser._id.toString(),
       },
-      "sljivicajesupersecrettajna",
-      { expiresIn: "1h" }
+      authConfig.secret,
+      { expiresIn: authConfig.jwtExpiration }
     );
+
+    let refreshToken = await RefreshToken.createToken(loadedUser);
+
     res.status(200).json({
       confirmation: "Success",
       message: "JWT created",
       data: {
         token: token,
+        refreshToken: refreshToken,
         userId: loadedUser._id.toString(),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const postRefreshToken = async (req, res, next) => {
+  const { refreshToken: requestToken } = req.body;
+  if (requestToken == null) {
+    const err = new Error("Refresh Token is required!");
+    err.statusCode = 403;
+    return next(err);
+  }
+  try {
+    let refreshToken = await RefreshToken.findOne({ token: requestToken });
+
+    if (!refreshToken) {
+      const err = new Error("Refresh token is not in database!");
+      err.statusCode = 403;
+      return next(err);
+    }
+
+    if (RefreshToken.verifyExpiration(refreshToken)) {
+      RefreshToken.findByIdAndRemove(refreshToken._id, {
+        useFindAndModify: false,
+      }).exec();
+
+      const err = new Error(
+        "Refresh token was expired. Please make a new signin request"
+      );
+      err.statusCode = 403;
+      return next(err);
+    }
+    const newAccessToken = jwt.sign(
+      { userId: refreshToken.user._id.toString() },
+      authConfig.secret,
+      {
+        expiresIn: authConfig.jwtExpiration,
+      }
+    );
+
+    return res.status(200).json({
+      confirmation: "success",
+      data: {
+        accessToken: newAccessToken,
+        refreshToken: refreshToken.token,
       },
     });
   } catch (error) {
@@ -78,4 +131,5 @@ const postLogin = async (req, res, next) => {
 export default {
   postRegisterUser,
   postLogin,
+  postRefreshToken
 };

@@ -19,15 +19,6 @@ const userSchema = new Schema({
     type: Boolean,
     required: true,
   },
-  results: [
-    {
-      date: Date,
-      difficulty: Number,
-      mutatedWords: Number,
-      numberOfMarkedWords: Number,
-      wrongWords: Number,
-    },
-  ],
   solvedTexts: [String],
 });
 

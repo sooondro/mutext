@@ -1,11 +1,9 @@
 import User from "../models/user.js";
+import Result from "../models/result.js";
 
 const getUserById = async (req, res, next) => {
-  const userId = req.params.userId;
-  if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
-    const error = new Error("Invalid id format");
-    return next(error);
-  }
+  const userId = req.userId;
+
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -22,37 +20,72 @@ const getUserById = async (req, res, next) => {
 };
 
 const postAddNewResult = async (req, res, next) => {
-  const userId = req.body.userId;
-  if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
-    const error = new Error("Invalid id format");
-    return next(error);
-  }
-
+  const userId = req.userId;
   const textId = req.body.textId;
+  const date = req.body.date;
+  const difficulty = req.body.difficulty;
+  const mutatedWords = req.body.mutatedWords;
+  const numberOfMarkedWords = req.body.numberOfMarkedWords;
+  const wrongWords = req.body.wrongWords;
 
   try {
-    await User.findByIdAndUpdate(
-      userId,
-      {
-        $push: {
-          results: {
-            date: req.body.date,
-            difficulty: req.body.difficulty,
-            mutatedWords: req.body.mutatedWords,
-            numberOfMarkedWords: req.body.numberOfMarkedWords,
-            wrongWords: req.body.wrongWords,
-          },
-          solvedTexts: textId,
-        },
-      }
-    );
-    res.json({ confirmation: "success" });
+    await User.findByIdAndUpdate(userId, {
+      $push: {
+        solvedTexts: textId,
+      },
+    });
+    const result = new Result({
+      date: date,
+      difficulty: difficulty,
+      mutatedWords: mutatedWords,
+      numberOfMarkedWords: numberOfMarkedWords,
+      wrongWords: wrongWords,
+      userId: userId,
+    });
+    await result.save();
+    res.json({ confirmation: "success", message: "Result saved" });
   } catch (error) {
     next(error);
   }
 };
 
+const getUserResults = async (req, res, next) => {
+  const userId = req.userId;
+
+  try {
+    const results = await Result.find(
+      { userId: userId },
+      "date difficulty mutatedWords numberOfMarkedWords wrongWords"
+    ).exec();
+    if (!results) {
+      const error = new Error("No results found for logged in user");
+      throw error;
+    }
+    res.status(200).json({
+      confirmation: "success",
+      data: results,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateFirstTime = async (req, res, next) => {
+  const userId = req.userId;
+
+  try {
+    await User.findByIdAndUpdate(userId, { isFirstTime: false }).exec();
+  } catch (error) {
+    return next(error);
+  }
+  res
+    .status(200)
+    .json({ confirmation: "success", message: "First time updated to false" });
+};
+
 export default {
   getUserById,
   postAddNewResult,
+  getUserResults,
+  updateFirstTime,
 };

@@ -7,4 +7,8 @@ const router = express.Router();
 
 router.get("/words", isAuth, wordsController.getWords);
 
+router.get("/text", isAuth, wordsController.getText);
+
+router.post("/add-text", wordsController.postText);
+
 export default router;

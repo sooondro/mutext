@@ -29,4 +29,6 @@ router.post(
 
 router.post("/login", authContoller.postLogin);
 
+router.post("/refresh-token", authContoller.postRefreshToken);
+
 export default router;
