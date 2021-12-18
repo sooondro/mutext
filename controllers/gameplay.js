@@ -1,4 +1,4 @@
-import retrieveRandomWords from "../data/words.js";
+import retrieveRandomWords from "../util/words.js";
 
 import Text from "../models/text.js";
 import User from "../models/user.js";

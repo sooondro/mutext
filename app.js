@@ -1,7 +1,9 @@
 import express from "express";
 import mongoose from "mongoose";
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
 
-import wordsRoutes from "./routes/words.js";
+import gameplayRoutes from "./routes/gameplay.js";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
 
@@ -10,16 +12,34 @@ const MONGODB_URI =
 
 const app = express();
 
+// Extended: https://swagger.io/specification/#infoObject
+const swaggerOptions = {
+  swaggerDefinition: {
+    info: {
+      title: 'Mutext API',
+      description: 'Mutext API information',
+      contact: {
+        name: "Sandro Blavicki"
+      },
+      servers: ["http://localhost:3000"]
+    }
+  },
+  apis: ["./routes/*.js"]
+};
+
+const swaggerDocs = swaggerJSDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 app.use(express.json());
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET");
+  res.setHeader("Access-Control-Allow-Methods", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
 
-app.use("/api/words", wordsRoutes);
+app.use("/api/gameplay", gameplayRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 
