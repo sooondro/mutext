@@ -15,7 +15,7 @@ const router = express.Router();
  *         description: A successful response
  */
 
-router.get("/words", isAuth, wordsController.getWords);
+router.get("/words", wordsController.getWords);
 
 /**
  * @swagger
@@ -27,7 +27,7 @@ router.get("/words", isAuth, wordsController.getWords);
  *         description: A successful response
  */
 
-router.get("/text", isAuth, wordsController.getText);
+router.get("/text", wordsController.getText);
 
 /**
  * @swagger
